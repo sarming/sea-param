@@ -29,3 +29,5 @@ cudd/include/*.h
 prism/\.project
 # Eclipse project custom settings directory
 prism/\.settings/
+.idea/
+prism/prism.iml
