@@ -1,0 +1,92 @@
+At 494f61ad git-svn-id: https://www.prismmodelchecker.org/svn/prism/prism/trunk@11749
+
+dur:prism ian$ ./bin/prism example4.pm -param 'x=0:1' -pf 'Pmax=? [ true U s=2]'
+PRISM
+=====
+
+Version: 4.3.1.dev
+Date: Tue Sep 13 20:33:50 CEST 2016
+Hostname: dur.cosy.sbg.ac.at
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism example4.pm -param 'x=0:1' -pf 'Pmax=? [ true U s=2]'
+
+Parsing model file "example4.pm"...
+
+1 property:
+(1) Pmax=? [ true U s=2 ]
+
+Type:        MDP
+Modules:     example2
+Variables:   s
+
+---------------------------------------------------------------------
+
+Parametric model checking: Pmax=? [ true U s=2 ]
+
+Building model...
+
+Computing reachable states...
+Warning: Update has zero probability (0, line 3, column 18)
+
+Warning: Update has zero probability (0, line 11, column 18)
+
+Warning: Update has zero probability (0, line 6, column 18)
+
+Warning: Update has zero probability (0, line 14, column 18)
+
+Reachable states exploration and model construction done in 0.039 secs.
+
+States:      4 (1 initial)
+Transitions: 12
+
+Time for model construction: 0.04 seconds.
+
+Time for model checking: 0.042 seconds.
+
+Result (maximum probability): ([0.0,1.0]): { 7  | 442  }
+
+
+
+
+
+
+
+
+At 3f7c3c5 https://www.prismmodelchecker.org/svn/prism/prism/trunk@11807
+
+dur:prism ian$ ./bin/prism example4.pm -param 'x=0:1' -pf 'Pmax=? [ true U s=2]'
+PRISM
+=====
+
+Version: 4.3.1.dev
+Date: Tue Sep 13 20:48:59 CEST 2016
+Hostname: dur.cosy.sbg.ac.at
+Memory limits: cudd=1g, java(heap)=910.5m
+Command line: prism example4.pm -param 'x=0:1' -pf 'Pmax=? [ true U s=2]'
+
+Parsing model file "example4.pm"...
+
+1 property:
+(1) Pmax=? [ true U s=2 ]
+
+Type:        MDP
+Modules:     example2
+Variables:   s
+
+---------------------------------------------------------------------
+
+Parametric model checking: Pmax=? [ true U s=2 ]
+
+Building model...
+
+Computing reachable states...
+Reachable states exploration and model construction done in 0.035 secs.
+
+States:      4 (1 initial)
+Transitions: 12
+
+Time for model construction: 0.035 seconds.
+
+Time for model checking: 0.049 seconds.
+
+Result (maximum probability): ([0.0,1.0]): { 7692307692307693  | 485714285714285715  }
