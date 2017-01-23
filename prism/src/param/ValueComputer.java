@@ -26,15 +26,12 @@
 
 package param;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * Computes values for properties of a parametric Markov model. 
- * 
+ * Computes values for properties of a parametric Markov model.
+ *
  * @author Ernst Moritz Hahn <emhahn@cs.ox.ac.uk> (University of Oxford)
  */
 final class ValueComputer
@@ -45,13 +42,13 @@ final class ValueComputer
 	};
 
 	class SchedulerCacheKey
-	{		
+	{
 		final private PropType propType;
 		final private BitSet b1;
 		final private BitSet b2;
 		final private boolean min;
 		final private ParamRewardStruct rew;
-		
+
 		SchedulerCacheKey(PropType propType, StateValues b1, StateValues b2, boolean min, ParamRewardStruct rew, Region region)
 		{
 			this.propType = propType;
@@ -64,7 +61,7 @@ final class ValueComputer
 			this.min = min;
 			this.rew = rew;
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (!(obj instanceof SchedulerCacheKey)) {
@@ -94,11 +91,11 @@ final class ValueComputer
 			}
 			return true;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			int hash = 0;
-			
+
 			switch (propType) {
 			case REACH:
 				hash = 13;
@@ -113,7 +110,7 @@ final class ValueComputer
 			}
 			hash = ((min) ? 13 : 17) + (hash << 6) + (hash << 16) - hash;
 			hash = ((rew == null) ? 0 : rew.hashCode()) + (hash << 6) + (hash << 16) - hash;
-			
+
 			return hash;
 		}
 	}
@@ -126,7 +123,7 @@ final class ValueComputer
 		final private ParamRewardStruct rew;
 		final private Scheduler sched;
 		final private boolean min;
-		
+
 		ResultCacheKey(PropType propType, StateValues b1, StateValues b2, ParamRewardStruct rew, Scheduler sched, boolean min)
 		{
 			this.propType = propType;
@@ -140,7 +137,7 @@ final class ValueComputer
 			this.sched = sched;
 			this.min = min;
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (!(obj instanceof ResultCacheKey)) {
@@ -173,11 +170,11 @@ final class ValueComputer
 			}
 			return true;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			int hash = 0;
-			
+
 			switch (propType) {
 			case REACH:
 				hash = 13;
@@ -193,27 +190,27 @@ final class ValueComputer
 			hash = (rew == null ? 0 : rew.hashCode()) + (hash << 6) + (hash << 16) - hash;
 			hash = sched.hashCode() + (hash << 6) + (hash << 16) - hash;
 			hash = (min ? 13 : 17) + (hash << 6) + (hash << 16) - hash;
-			
+
 			return hash;
 		}
 	}
-	
+
 	class ResultCacheEntry
 	{
 		final private StateValues values;
 		final private Function[] compare;
-		
+
 		ResultCacheEntry(StateValues values, Function[] compare)
 		{
 			this.values = values;
 			this.compare = compare;
 		}
-		
+
 		StateValues getValues()
 		{
 			return values;
 		}
-		
+
 		Function[] getCompare()
 		{
 			return compare;
@@ -242,8 +239,45 @@ final class ValueComputer
 		this.bisimType = bisimType;
 	}
 
-	RegionValues computeUnbounded(RegionValues b1, RegionValues b2, boolean min, ParamRewardStruct rew) {
+	RegionValues computeAllSchedulers(RegionValues b1, RegionValues b2, boolean min, ParamRewardStruct rew) {
 		RegionValues result = new RegionValues(regionFactory);
+
+		schedulerList = new ArrayList<>();
+		enumerateSchedulers(new Scheduler(model), 0);
+		System.out.println("Created " + schedulerList.size() + " schedulers");
+		Set<Function> functions = new HashSet<>(schedulerList.size());
+		int i = 0;
+		for (Scheduler sched : schedulerList) {
+//			if(i==5328) System.out.println(i);
+			if (++i % 100 == 0) System.out.println(i);
+
+			MutablePMC pmc = buildAlterablePMCForReach(model, b1.getStateValues(), b2.getStateValues(), sched, rew);
+			StateValues values = computeValues(pmc, model.getFirstInitialState());
+			functions.add(values.getInitStateValueAsFunction());
+//			System.out.println(values.getInitStateValueAsFunction());
+//			result.addAll(regionFactory.completeCover(values));
+		}
+		for (Function f : functions)
+			System.out.println(f);
+
+		return result;
+	}
+
+    private List<Scheduler> schedulerList;
+
+    private void enumerateSchedulers(Scheduler sched, int state) {
+        for (int choice = model.stateBegin(state); choice < model.stateEnd(state); choice++) {
+            sched.setChoice(state,choice);
+            if(state < model.getNumStates()-1){
+                enumerateSchedulers(sched, state +1);
+            } else {
+                schedulerList.add(new Scheduler(sched));
+            }
+        }
+    }
+
+	RegionValues computeUnbounded(RegionValues b1, RegionValues b2, boolean min, ParamRewardStruct rew) {
+        RegionValues result = new RegionValues(regionFactory);
 		RegionValuesIntersections co = new RegionValuesIntersections(b1, b2);
 		for (RegionIntersection inter : co) {
 			Region region = inter.getRegion();
@@ -255,9 +289,9 @@ final class ValueComputer
 		return result;
 	}
 
-	private RegionValues computeUnbounded(Region region, StateValues b1, StateValues b2, boolean min, ParamRewardStruct rew)
+    private RegionValues computeUnbounded(Region region, StateValues b1, StateValues b2, boolean min, ParamRewardStruct rew)
 	{
-		BigRational requiredVolume = region.volume().multiply(BigRational.ONE.subtract(precision));		
+		BigRational requiredVolume = region.volume().multiply(BigRational.ONE.subtract(precision));
 		RegionValues result = new RegionValues(regionFactory);
 		RegionsTODO todo = new RegionsTODO();
 		todo.add(region);
@@ -296,12 +330,12 @@ final class ValueComputer
 
 		return result;
 	}
-	
+
 	private Function[] computeCompare(StateValues b1, StateValues b2,
 			ParamRewardStruct rew, Scheduler scheduler, boolean min,
 			StateValues values) {
 		HashSet<Function> allValues = new HashSet<Function>();
-		
+
 		for (int state = 0; state < model.getNumStates(); state++) {
 			if (!b1.getStateValueAsBoolean(state) || b2.getStateValueAsBoolean(state)) {
 				continue;
@@ -343,7 +377,7 @@ final class ValueComputer
 		if (rew != null) {
 			rewConcrete = rew.instantiate(point);
 		}
-		
+
 		Scheduler scheduler = lookupScheduler(point, concrete, PropType.REACH, b1, b2, min, rewConcrete);
 		if (scheduler != null) {
 			return scheduler;
@@ -358,7 +392,7 @@ final class ValueComputer
 			for (int state = 0; state < concrete.getNumStates(); state++) {
 				values[state] = fnValues.getStateValueAsFunction(state).asBigRational();
 			}
-					
+
 			changed = false;
 			for (int state = 0; state < concrete.getNumStates(); state++) {
 				if (!b1.getStateValueAsBoolean(state) || b2.getStateValueAsBoolean(state)) {
@@ -389,7 +423,7 @@ final class ValueComputer
 
 		return scheduler;
 	}
-	
+
 	private void storeScheduler(PropType propType, StateValues b1, StateValues b2, boolean min,
 			ParamRewardStruct rew, Scheduler scheduler) {
 		SchedulerCacheKey cacheKey = new SchedulerCacheKey(propType, b1, b2, min, rew, null);
@@ -398,7 +432,7 @@ final class ValueComputer
 			schedulers = new ArrayList<Scheduler>();
 			schedCache.put(cacheKey, schedulers);
 		}
-		schedulers.add(scheduler);		
+		schedulers.add(scheduler);
 	}
 
 	private Scheduler lookupScheduler(Point point, ParamModel concrete, PropType propType, StateValues b1, StateValues b2,
@@ -424,8 +458,8 @@ final class ValueComputer
 	{
 		ResultCacheKey resultKey = new ResultCacheKey(propType, b1, b2, rew, scheduler, min);
 		ResultCacheEntry resultCacheEntry = resultCache.get(resultKey);
-		
-		Function compare[] = resultCacheEntry.getCompare();		
+
+		Function compare[] = resultCacheEntry.getCompare();
 		for (Function entry : compare) {
 			if (entry.evaluate(point, false).signum() == -1) {
 				return false;
@@ -446,7 +480,7 @@ final class ValueComputer
 	 * for reachability probabilities or accumulated rewards. {@code b1} is
 	 * either constantly {@code} or describes the left side of an until
 	 * property.
-	 * 
+	 *
 	 * @param mdp Markov model to precompute for
 	 * @param sched scheduler to precompute
 	 * @param b1 left side of U property, or constant true
@@ -504,7 +538,7 @@ final class ValueComputer
 			}
 		}
 	}
-	
+
 	private MutablePMC buildAlterablePMCForReach(ParamModel model, StateValues b1, StateValues b2, Scheduler scheduler, ParamRewardStruct rew)
 	{
 		MutablePMC pmc = new MutablePMC(functionFactory, model.getNumStates(), rew != null, false);
@@ -532,7 +566,7 @@ final class ValueComputer
 				}
 			}
 		}
-		
+
 		return pmc;
 	}
 
@@ -554,7 +588,7 @@ final class ValueComputer
 			}
 			pmc.setTime(state, functionFactory.getOne().divide(sumLeaving));
 		}
-		
+
 		return pmc;
 	}
 
@@ -576,12 +610,12 @@ final class ValueComputer
 			}
 			break;
 		default:
-			throw new RuntimeException("invalid bisimulation method"); 
+			throw new RuntimeException("invalid bisimulation method");
 		}
 		if (lumper instanceof WeakLumper && pmc.isUseTime()) {
 			lumper = new StrongLumper(pmc);
 		}
-		
+
 		MutablePMC quot = lumper.getQuotient();
 		StateEliminator eliminator = new StateEliminator(quot, eliminationOrder);
 		eliminator.eliminate();
@@ -611,7 +645,7 @@ final class ValueComputer
 		return result;
 	}
 
-	
+
 	public RegionValues computeSteadyState(RegionValues b, boolean min, ParamRewardStruct rew)
 	{
 		RegionValues result = new RegionValues(regionFactory);
@@ -619,7 +653,7 @@ final class ValueComputer
 			Region region = entry.getKey();
 			StateValues value = entry.getValue();
 			RegionValues val = computeSteadyState(region, value, min, rew);
-			result.addAll(val);			
+			result.addAll(val);
 		}
 		return result;
 	}
