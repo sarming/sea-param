@@ -26,8 +26,8 @@
 
 package param;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Function factory implementing a cache for functions from other factories.
@@ -88,13 +88,11 @@ final class CachedFunctionFactory extends FunctionFactory {
 	/** function factory of which we cache functions */
 	private FunctionFactory context;
 	/** maps each function from {@code context} to a unique integer */
-	private HashMap<Function, Integer> functionToNumber;
-	/** maps each integer to function from {@code context}, cf. also {@code functionToNumber} */
-	private ArrayList<Function> functions;
-	/** list of all function of this function factory */ 
-	private ArrayList<CachedFunction> cachedFunctions;
+	private ConcurrentHashMap<Function, CachedFunction> cachedFunctions;
+	/** maps each integer to function from {@code context}, cf. also {@code cachedFunctions} */
+	private ConcurrentHashMap<CachedFunction,Function> functions;
 	/** next new function will be assigned this number */
-	private int nextFunctionNumber;
+	private AtomicInteger nextFunctionNumber;
 	/** function representing one (1) */
 	private CachedFunction one;
 	/** function representing zero (0) */
@@ -102,11 +100,11 @@ final class CachedFunctionFactory extends FunctionFactory {
 	/** true iff operation cache is to be used */
 	private boolean useOpCache;
 	/** cache for additions (and indirectly subtractions) */		
-	private HashMap<OpCacheKey, CachedFunction> addCache;
+	private ConcurrentHashMap<OpCacheKey, CachedFunction> addCache;
 	/** cache for multiplications (and indirectly divisions) */	
-	private HashMap<OpCacheKey, CachedFunction> multCache;
+	private ConcurrentHashMap<OpCacheKey, CachedFunction> multCache;
 	/** cache for star operation */
-	private HashMap<CachedFunction, CachedFunction> starCache;
+	private ConcurrentHashMap<CachedFunction, CachedFunction> starCache;
 	
 	/**
 	 * Constructs a new cached function factory.
@@ -117,15 +115,14 @@ final class CachedFunctionFactory extends FunctionFactory {
 	CachedFunctionFactory(FunctionFactory context) {
 		super(context.parameterNames, context.lowerBounds, context.upperBounds);
 		this.context = context;
-		functionToNumber = new HashMap<Function, Integer>();
-		cachedFunctions = new ArrayList<CachedFunction>();
-		functions = new ArrayList<Function>();
-		nextFunctionNumber = 0;
-		one = makeUnique(context.getOne());
-		zero = makeUnique(context.getZero());
-		addCache = new HashMap<OpCacheKey, CachedFunction>();
-		multCache = new HashMap<OpCacheKey, CachedFunction>();
-		starCache = new HashMap<CachedFunction, CachedFunction>();
+		cachedFunctions = new ConcurrentHashMap<>();
+		functions = new ConcurrentHashMap<>();
+		nextFunctionNumber = new AtomicInteger();
+		one = cacheFunction(context.getOne());
+		zero = cacheFunction(context.getZero());
+		addCache = new ConcurrentHashMap<OpCacheKey, CachedFunction>();
+		multCache = new ConcurrentHashMap<OpCacheKey, CachedFunction>();
+		starCache = new ConcurrentHashMap<CachedFunction, CachedFunction>();
 		useOpCache = true;
 	}
 	
@@ -148,19 +145,16 @@ final class CachedFunctionFactory extends FunctionFactory {
 	 * @param function function to return unique integer of
 	 * @return unique integer representing function
 	 */
-	private synchronized CachedFunction makeUnique(Function function)
+	private CachedFunction cacheFunction(Function function)
 	{
-		Integer number = functionToNumber.get(function);
-		if (number != null) {
-			return cachedFunctions.get(number);
-		} else {
-			CachedFunction cachedFunction = new CachedFunction(this, nextFunctionNumber);
-			functionToNumber.put(function, nextFunctionNumber);
-			cachedFunctions.add(cachedFunction);
-			functions.add(function);
-			nextFunctionNumber++;
-			return cachedFunction;
+		CachedFunction cached = cachedFunctions.get(function);
+		if (cached == null) {
+			int i = nextFunctionNumber.incrementAndGet();
+			cached = new CachedFunction(this, i);
+			functions.put(cached, function);
+			cachedFunctions.put(function, cached);
 		}
+		return cached;
 	}
 	
 	/**
@@ -169,7 +163,7 @@ final class CachedFunctionFactory extends FunctionFactory {
 	 * @param number number of function to return
 	 * @return function with the given number
 	 */
-	Function getFunction(int number)
+	Function getFunction(CachedFunction number)
 	{
 		return functions.get(number);
 	}
@@ -186,17 +180,17 @@ final class CachedFunctionFactory extends FunctionFactory {
 		return zero;
 	}
 
-	private Function getFunctionFromCache(Function cached)
+	private Function getFunctionFromCache(CachedFunction cached)
 	{
-		return functions.get(((CachedFunction) cached).getNumber());
+		return functions.get(cached);
 	}
 	
-	Function add(Function cached1, Function cached2)
+	CachedFunction add(CachedFunction cached1, CachedFunction cached2)
 	{
-		Function result;
+		CachedFunction result;
 		OpCacheKey opCacheKey = null;
 		if (useOpCache) {
-			opCacheKey = new OpCacheKey((CachedFunction) cached1, (CachedFunction) cached2);
+			opCacheKey = new OpCacheKey( cached1, cached2);
 			result = addCache.get(opCacheKey);
 			if (result != null) {
 				return result;
@@ -204,22 +198,22 @@ final class CachedFunctionFactory extends FunctionFactory {
 		}
 		Function function1 = getFunctionFromCache(cached1);
 		Function function2 = getFunctionFromCache(cached2);
-		result = makeUnique(function1.add(function2));
+		result = cacheFunction(function1.add(function2));
 		if (useOpCache) {
-			addCache.put(opCacheKey, (CachedFunction) result);
+			addCache.put(opCacheKey, result);
 		}
 		return result;
 	}
 
-	Function negate(Function cached)
+	CachedFunction negate(CachedFunction cached)
 	{
 		Function function = getFunctionFromCache(cached);
-		return makeUnique(function.negate());
+		return cacheFunction(function.negate());
 	}
 
-	Function multiply(Function cached1, Function cached2)
+	CachedFunction multiply(CachedFunction cached1, CachedFunction cached2)
 	{
-		Function result;
+		CachedFunction result;
 		OpCacheKey opCacheKey = null;
 		if (useOpCache) {
 			opCacheKey = new OpCacheKey((CachedFunction) cached1, (CachedFunction) cached2);
@@ -230,22 +224,22 @@ final class CachedFunctionFactory extends FunctionFactory {
 		}
 		Function function1 = getFunctionFromCache(cached1);
 		Function function2 = getFunctionFromCache(cached2);
-		result = makeUnique(function1.multiply(function2));
+		result = cacheFunction(function1.multiply(function2));
 		if (useOpCache) {
 			multCache.put(opCacheKey, (CachedFunction) result);
 		}
 		return result;
 	}
 
-	Function divide(Function cached1, Function cached2)
+	CachedFunction divide(CachedFunction cached1, CachedFunction cached2)
 	{
 		Function function1 = getFunctionFromCache(cached1);
 		Function function2 = getFunctionFromCache(cached2);
-		return makeUnique(function1.divide(function2));
+		return cacheFunction(function1.divide(function2));
 	}
 	
-	Function star(Function cached) {
-		Function result;
+	CachedFunction star(CachedFunction cached) {
+		CachedFunction result;
 		if (useOpCache) {
 			result = starCache.get(cached);
 			if (result != null) {
@@ -253,9 +247,9 @@ final class CachedFunctionFactory extends FunctionFactory {
 			}
 		}
 		Function function = getFunctionFromCache(cached);
-		result = makeUnique(function.star());
+		result = cacheFunction(function.star());
 		if (useOpCache) {
-			starCache.put((CachedFunction) cached, (CachedFunction) result);
+			starCache.put(cached, result);
 		}
 		return result;
 	}
@@ -281,7 +275,7 @@ final class CachedFunctionFactory extends FunctionFactory {
 	public Function fromBigRational(BigRational from)
 	{
 		Function fn = context.fromBigRational(from);
-		return makeUnique(fn);
+		return cacheFunction(fn);
 	}
 
 	public BigRational asBigRational(CachedFunction cached) {
@@ -327,21 +321,21 @@ final class CachedFunctionFactory extends FunctionFactory {
 
 	@Override
 	Function getNaN() {
-		return makeUnique(context.getNaN());
+		return cacheFunction(context.getNaN());
 	}
 
 	@Override
 	Function getInf() {
-		return makeUnique(context.getInf());
+		return cacheFunction(context.getInf());
 	}
 
 	@Override
 	Function getMInf() {
-		return makeUnique(context.getMInf());
+		return cacheFunction(context.getMInf());
 	}
 
 	@Override
 	Function getVar(int var) {
-		return makeUnique(context.getVar(var));
+		return cacheFunction(context.getVar(var));
 	}
 }
