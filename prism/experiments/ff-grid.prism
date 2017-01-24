@@ -2,18 +2,24 @@ mdp
 const int N=3;
 const int M=3;
 
-const double ne; //= 0.1;
-const double nw; //= 0.1;
-const double se; //= 0.1;
-const double sw; //= 0.1;
-const double en; //= 0.1;
-const double es; //= 0.1;
-const double wn; //= 0.1;
-const double ws; //= 0.1;
+const double p;
+
+const double v=p; //= 0.1;
+const double h=p; //= 0.1;
+
+const double ne=v/2; //= 0.1;
+const double nw=v/2; //= 0.1;
+const double se=v/2; //= 0.1;
+const double sw=v/2; //= 0.1;
+const double en=h/2; //= 0.1;
+const double es=h/2; //= 0.1;
+const double wn=h/2; //= 0.1;
+const double ws=h/2; //= 0.1;
 
 formula fail = x=1 & y=2;
+label "goal" = x=N & y=M;
 
-module example4
+module ff_grid
 
              x : [1..N] init 1;
              y : [1..M] init 1;
