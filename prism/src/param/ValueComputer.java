@@ -26,8 +26,11 @@
 
 package param;
 
+import prism.Pair;
+
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.IntStream;
 
 /**
  * Computes values for properties of a parametric Markov model.
@@ -245,20 +248,20 @@ final class ValueComputer
 		schedulerList = new ArrayList<>();
 		enumerateSchedulers(new Scheduler(model), 0);
 		System.out.println("Created " + schedulerList.size() + " schedulers");
-		Set<Function> functions = new HashSet<>(schedulerList.size());
-		int i = 0;
-		for (Scheduler sched : schedulerList) {
-//			if(i==5328) System.out.println(i);
-			if (++i % 100 == 0) System.out.println(i);
 
-			MutablePMC pmc = buildAlterablePMCForReach(model, b1.getStateValues(), b2.getStateValues(), sched, rew);
-			StateValues values = computeValues(pmc, model.getFirstInitialState());
-			functions.add(values.getInitStateValueAsFunction());
-//			System.out.println(values.getInitStateValueAsFunction());
-//			result.addAll(regionFactory.completeCover(values));
-		}
-		for (Function f : functions)
-			System.out.println(f);
+		IntStream.range(0, schedulerList.size())
+				.parallel()
+				.mapToObj((int i) -> {
+					if (i % 100 == 0) System.err.println(i);
+//					if (i == 5328) System.err.println(i);
+					Scheduler sched = schedulerList.get(i);
+					MutablePMC pmc = buildAlterablePMCForReach(model, b1.getStateValues(), b2.getStateValues(), sched, rew);
+					StateValues values = computeValues(pmc, model.getFirstInitialState());
+//					System.err.println(values.getInitStateValueAsFunction());
+					return values.getInitStateValueAsFunction();
+				})
+				.distinct()
+				.forEach(System.out::println);
 
 		return result;
 	}

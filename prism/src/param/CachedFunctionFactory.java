@@ -148,7 +148,7 @@ final class CachedFunctionFactory extends FunctionFactory {
 	 * @param function function to return unique integer of
 	 * @return unique integer representing function
 	 */
-	private CachedFunction makeUnique(Function function)
+	private synchronized CachedFunction makeUnique(Function function)
 	{
 		Integer number = functionToNumber.get(function);
 		if (number != null) {
