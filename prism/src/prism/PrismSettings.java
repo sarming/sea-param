@@ -333,7 +333,7 @@ public class PrismSettings implements Observer
 																			"Strategy to use when splitting a region during parametric model checking. Either split on longest side, or split on all sides." },
 			{ CHOICE_TYPE,		PRISM_PARAM_BISIM,						"Parametric model checking bisimulation method",					"4.1",			"Weak",																		"Weak,Strong,None",
 																			"Type of bisimulation used to reduce model size during paramteric model checking. For reward-based properties, weak bisimulation cannot be used." },
-			{ CHOICE_TYPE,		PRISM_PARAM_FUNCTION,					"Parametric model checking function representation",				"4.1",			"JAS-cached",																"JAS-cached,JAS,DAG",
+			{ CHOICE_TYPE,		PRISM_PARAM_FUNCTION,					"Parametric model checking function representation",				"4.1",			"JAS",																"JAS-cached,JAS,DAG",
 																			"Type of representation for functions used during parametric model checking." },
 			{ CHOICE_TYPE,		PRISM_PARAM_ELIM_ORDER,					"Parametric model checking state elimination order",			"4.1",			"Backward",																		"Arbitrary,Forward,Forward-reversed,Backward,Backward-reversed,Random",
 																			"Order in which states are eliminated during unbounded parametric model checking analysis." },
