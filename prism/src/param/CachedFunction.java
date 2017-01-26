@@ -3,7 +3,7 @@
 //	Copyright (c) 2013-
 //	Authors:
 //	* Ernst Moritz Hahn <emhahn@cs.ox.ac.uk> (University of Oxford)
-//
+//	
 //------------------------------------------------------------------------------
 //	
 //	This file is part of PRISM.
@@ -52,19 +52,19 @@ final class CachedFunction extends Function {
 	}
 	
 	/**
-	 * Returns the unique number of the cached function this function represents.
-	 *
+	 * Returns the unique number of the cached function this function represents. 
+	 * 
 	 * @return unique number
 	 */
 	int getNumber()
 	{
 		return number;
 	}
-
+	
 	@Override
 	public String toString()
 	{
-		return factory.getFunction(this).toString();
+		return factory.getFunction(number).toString();
 	}
 	
 	@Override
@@ -75,15 +75,15 @@ final class CachedFunction extends Function {
 		CachedFunction function = (CachedFunction) obj;
 		return number == function.number;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return number;
 	}
-
+	
 	@Override
 	public Function add(Function other) {
-		return factory.add(this,  (CachedFunction) other);
+		return factory.add(this,  other);
 	}
 
 	@Override
@@ -93,12 +93,12 @@ final class CachedFunction extends Function {
 
 	@Override
 	public Function multiply(Function other) {
-		return factory.multiply(this, (CachedFunction) other);
+		return factory.multiply(this, other);
 	}
 
 	@Override
 	public Function divide(Function other) {
-		return factory.divide(this, (CachedFunction) other);
+		return factory.divide(this, other);
 	}
 
 	@Override
