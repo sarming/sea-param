@@ -220,15 +220,15 @@ final class ValueComputer
 		}
 	}
 
-	private ParamModel model;
-	private RegionFactory regionFactory;
-	private FunctionFactory functionFactory;
-	private ConstraintChecker constraintChecker;
-	private BigRational precision;
-	private HashMap<SchedulerCacheKey,ArrayList<Scheduler>> schedCache;
-	private HashMap<ResultCacheKey,ResultCacheEntry> resultCache;
-	private StateEliminator.EliminationOrder eliminationOrder;
-	private Lumper.BisimType bisimType;
+	private final ParamModel model;
+	private final RegionFactory regionFactory;
+	private final FunctionFactory functionFactory;
+	private final ConstraintChecker constraintChecker;
+	private final BigRational precision;
+	private final HashMap<SchedulerCacheKey,ArrayList<Scheduler>> schedCache;
+	private final HashMap<ResultCacheKey,ResultCacheEntry> resultCache;
+	private final StateEliminator.EliminationOrder eliminationOrder;
+	private final Lumper.BisimType bisimType;
 
 	ValueComputer(ParamModel model, RegionFactory regionFactory, BigRational precision, StateEliminator.EliminationOrder eliminationOrder, Lumper.BisimType bisimType) {
 		this.model = model;
@@ -250,6 +250,7 @@ final class ValueComputer
 		System.out.println("Created " + schedulerList.size() + " schedulers");
 
 		IntStream.range(0, schedulerList.size())
+//				.limit(10000)
 				.parallel()
 				.mapToObj((int i) -> {
 					if (i % 100 == 0) System.err.println(i);
@@ -260,7 +261,6 @@ final class ValueComputer
 //					System.err.println(values.getInitStateValueAsFunction());
 					return values.getInitStateValueAsFunction();
 				})
-				.distinct()
 				.forEach(System.out::println);
 
 		return result;
