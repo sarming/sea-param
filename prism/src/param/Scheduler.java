@@ -26,6 +26,9 @@
 
 package param;
 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 /**
  * Simple scheduler for a parametric model.
  * Assigns a single nonrandomised decision to each state of the model.
@@ -35,7 +38,8 @@ package param;
 final class Scheduler {
 	/** represents the choice taken for each state */
 	private int[] choices;
-	
+	private final ParamModel model;
+
 	/**
 	 * Constructs a new scheduler for {@code model}.
 	 * The scheduler is legal, but not necessarily optimal in any sense.
@@ -44,6 +48,7 @@ final class Scheduler {
 	 */
 	Scheduler(ParamModel model)
 	{
+		this.model=model;
 		choices = new int[model.getNumStates()];
 		for (int state = 0; state < model.getNumStates(); state++) {
 			choices[state] = model.stateEnd(state) - 1;
@@ -52,6 +57,7 @@ final class Scheduler {
 
 	public Scheduler(Scheduler copy) {
 		this.choices = copy.choices.clone();
+		this.model = copy.model;
 	}
 
 	/**
@@ -91,11 +97,18 @@ final class Scheduler {
 	@Override
 	public int hashCode() {
 		int hash = 0;
-		
+
 		for (int state = 0; state < choices.length; state++) {
 			hash = choices[state] + (hash << 6) + (hash << 16) - hash;
 		}
-		
+
 		return hash;
+	}
+
+	@Override
+	public String toString() {
+		return Arrays.toString(IntStream.range(0, choices.length)
+				.mapToObj(i -> model.getStatesList().get(i) + ":" + model.getLabel(model.choiceBegin(choices[i])))
+				.toArray());
 	}
 }
