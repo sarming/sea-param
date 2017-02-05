@@ -2,23 +2,17 @@ mdp
 const int N=2;
 const int M=2;
 
-// const double b;
-// count double e;
-// const double l = b * e;
-// const double r = (e-b)*e;
-const double r;
-const double l;
-const double ne=r;
-const double nw=l;
-const double se=l;
-const double sw=r;
-const double en=l;
-const double es=r;
-const double wn=r;
-const double ws=l;
+const double ne;
+const double nw;
+const double se;
+const double sw;
+const double en;
+const double es;
+const double wn;
+const double ws;
 
 formula sink = (x=1 & y=2) | (x=N & y=M);
-label "goal" = x=1 & y=2;
+label "goal" = x=N & y=M;
 
 module fs_grid
 
