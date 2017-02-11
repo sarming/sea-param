@@ -42,4 +42,4 @@ module ff_grid
              [s] y>1 & x=N       & !sink -> 1-se    : (y'=y-1) +                  ws : (x'=x-1);
 
              [x] sink -> true;
-nwdmodule
+endmodule
