@@ -6,14 +6,14 @@ const double p;
 
 const double v=p;
 const double h=p;
-const double ne=v/2;
-const double nw=v/2;
-const double se=v/2;
-const double sw=v/2;
-const double en=h/2;
-const double es=h/2;
-const double wn=h/2;
-const double ws=h/2;
+const double es=v/2;
+const double en=v/2;
+const double ws=v/2;
+const double wn=v/2;
+const double nw=h/2;
+const double ne=h/2;
+const double sw=h/2;
+const double se=h/2;
 
 formula sink = (x=2 & y=1) | (x=N & y=M);
 label "goal" = x=N & y=M;
@@ -23,21 +23,21 @@ module fs_grid
              x : [1..N] init 1;
              y : [1..M] init 1;
 
-             [n] x<N & y>1 & y<M & !sink -> 1-ne-nw : (x'=x+1) +  ne : (y'=y+1) + nw : (y'=y-1);
-             [n] x<N & y=1       & !sink -> 1-ne-nw : (x'=x+1) +  (ne+nw) : (y'=y+1);
-             [n] x<N & y=M       & !sink -> 1-ne-nw : (x'=x+1) +             (nw+ne) : (y'=y-1);
+             [e] x<N & y>1 & y<M & !sink -> 1-es-en : (x'=x+1) +  ne : (y'=y+1) + nw : (y'=y-1);
+             [e] x<N & y=1       & !sink -> 1-es-en : (x'=x+1) +  (ne+nw) : (y'=y+1);
+             [e] x<N & y=M       & !sink -> 1-es-en : (x'=x+1) +             (nw+ne) : (y'=y-1);
 
-             [s] x>1 & y>1 & y<M & !sink -> 1-se-sw : (x'=x-1) +  se : (y'=y+1) + sw : (y'=y-1);
-             [s] x>1 & y=1       & !sink -> 1-se-sw : (x'=x-1) +  (se+sw) : (y'=y+1);
-             [s] x>1 & y=M       & !sink -> 1-se-sw : (x'=x-1) +             (sw+se) : (y'=y-1);
+             [w] x>1 & y>1 & y<M & !sink -> 1-ws-wn : (x'=x-1) +  se : (y'=y+1) + sw : (y'=y-1);
+             [w] x>1 & y=1       & !sink -> 1-ws-wn : (x'=x-1) +  (se+sw) : (y'=y+1);
+             [w] x>1 & y=M       & !sink -> 1-ws-wn : (x'=x-1) +             (sw+se) : (y'=y-1);
 
-             [e] y<M & x>1 & x<N & !sink -> 1-en-es : (y'=y+1) +  en : (x'=x+1) + es : (x'=x-1);
-             [e] y<M & x=1       & !sink -> 1-en-es : (y'=y+1) +  (en+es) : (x'=x+1);
-             [e] y<M & x=N       & !sink -> 1-en-es : (y'=y+1) +             (es+en) : (x'=x-1);
+             [n] y<M & x>1 & x<N & !sink -> 1-nw-ne : (y'=y+1) +  en : (x'=x+1) + es : (x'=x-1);
+             [n] y<M & x=1       & !sink -> 1-nw-ne : (y'=y+1) +  (en+es) : (x'=x+1);
+             [n] y<M & x=N       & !sink -> 1-nw-ne : (y'=y+1) +             (es+en) : (x'=x-1);
 
-             [w] y>1 & x>1 & x<N & !sink -> 1-wn-ws : (y'=y-1) +  wn : (x'=x+1) + ws : (x'=x-1);
-             [w] y>1 & x=1       & !sink -> 1-wn-ws : (y'=y-1) +  (wn+ws) : (x'=x+1);
-             [w] y>1 & x=N       & !sink -> 1-wn-ws : (y'=y-1) +             (ws+wn) : (x'=x-1);
+             [s] y>1 & x>1 & x<N & !sink -> 1-sw-se : (y'=y-1) +  wn : (x'=x+1) + ws : (x'=x-1);
+             [s] y>1 & x=1       & !sink -> 1-sw-se : (y'=y-1) +  (wn+ws) : (x'=x+1);
+             [s] y>1 & x=N       & !sink -> 1-sw-se : (y'=y-1) +             (ws+wn) : (x'=x-1);
 
              [x] sink -> true;
-endmodule
+nwdmodule
