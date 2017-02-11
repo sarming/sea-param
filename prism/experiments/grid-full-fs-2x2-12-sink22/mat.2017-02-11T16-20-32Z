@@ -1,0 +1,4 @@
+( 1  )/( en + es + 1  )
+( ( -1 ) en - es + 1  )/( en * se + es * se + en * sw + es * sw - en - es + 1  )
+( ( -1 ) ne - nw )/( se * ne + sw * ne + se * nw + sw * nw - ne - nw - se - sw )
+( ne + nw )/( en * ne + es * ne + en * nw + es * nw - en - es + 1  )
