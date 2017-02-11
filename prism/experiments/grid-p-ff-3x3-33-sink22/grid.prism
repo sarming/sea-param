@@ -15,7 +15,7 @@ const double ne=h/2;
 const double sw=h/2;
 const double se=h/2;
 
-formula sink = (x=2 & y=1) | (x=N & y=M);
+formula sink = (x=2 & y=2) | (x=N & y=M);
 label "goal" = x=N & y=M;
 
 module ff_grid
