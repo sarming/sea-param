@@ -1,4 +1,0 @@
-( ( -1 ) en + 1  )/( en * se - en + 1  )
-( ( -1 ) ne )/( se * ne - ne - se )
-( en - 1  )/( es * en - 1  )
-( ne )/( es * ne - es + 1  )
