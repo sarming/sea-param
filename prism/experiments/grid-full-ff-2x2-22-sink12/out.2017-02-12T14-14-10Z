@@ -1,0 +1,42 @@
+PRISM
+=====
+
+Version: 4.3.1.dev
+Date: Sun Feb 12 15:14:11 CET 2017
+Hostname: big-iron8
+Memory limits: cudd=1g, java(heap)=44.4g
+Command line: prism grid.prism Fgoal.props -param 'ne=0:1,nw=0:1,se=0:1,sw=0:1,en=0:1,es=0:1,wn=0:1,ws=0:1' -javamaxmem 50g
+
+Parsing model file "grid.prism"...
+
+Parsing properties file "Fgoal.props"...
+
+1 property:
+(1) Pmax=? [ F "goal" ]
+
+Type:        MDP
+Modules:     ff_grid 
+Variables:   x y 
+
+---------------------------------------------------------------------
+
+Parametric model checking: Pmax=? [ F "goal" ]
+
+Building model...
+
+Computing reachable states...
+Reachable states exploration and model construction done in 0.023 secs.
+
+States:      4 (1 initial)
+Transitions: 10
+
+Time for model construction: 0.023 seconds.
+Created 4 schedulers
+{ nw * ne - ne | nw * ne - 1  }
+{ wn * ne | wn * ne - ne + 1  }
+{ en * nw - nw - en + 1  | en * nw - nw + 1  }
+{ wn * en - wn | wn * en - en - wn }
+
+Time for model checking: 0.113 seconds.
+
+Result (maximum probability): 
