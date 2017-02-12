@@ -1,0 +1,2 @@
+{"grid-full-ff-2x2-22-sink12/mat.2017-02-12T14-14-10Z" -> {4, 1.396256, 1.391923, 0.03623351795085889, {(1 - en - nw + en*nw)/(1 - nw + en*nw)}, 1.0000000020147446, {(-ne + ne*nw)/(-1 + ne*nw)}}}
+{"grid-full-fs-2x2-22-sink12/mat.2017-02-12T14-14-12Z" -> {4, 19.094121, 2.189303, 0.03623351691001077, {(ne*wn + nw*wn + ne*ws + nw*ws)/(1 - ne - nw + ne*wn + nw*wn + ne*ws + nw*ws)}, 1., {(-wn + en*wn + es*wn - ws + en*ws + es*ws)/(-en - es - wn + en*wn + es*wn - ws + en*ws + es*ws)}}}
