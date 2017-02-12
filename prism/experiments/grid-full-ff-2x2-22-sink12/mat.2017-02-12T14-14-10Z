@@ -1,0 +1,4 @@
+( en * nw - nw - en + 1  )/( en * nw - nw + 1  )
+( nw * ne - ne )/( nw * ne - 1  )
+( wn * en - wn )/( wn * en - en - wn )
+( wn * ne )/( wn * ne - ne + 1  )
